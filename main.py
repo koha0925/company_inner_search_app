@@ -56,22 +56,33 @@ if not "initialized" in st.session_state:
 ############################################################
 # 4. 初期表示
 ############################################################
-# タイトル表示
-cn.display_app_title()
+# ===== 2カラムレイアウト =====
+left, right = st.columns([1, 2])
 
-# モード表示
-cn.display_select_mode()
+# ---- 左：モード選択 + 区切り + 例 ----
+with left:
+    cn.display_select_mode(container=left)  # ← 左カラムにラジオを出す（components.pyを置換済み前提）
+    st.divider()
+    cn.display_examples_block()            # ← 例ブロック（components.pyに追加した関数）
 
-# AIメッセージの初期表示
-cn.display_initial_ai_message()
+# ---- 右：タイトル + 案内文 ----
+with right:
+    cn.display_app_title()
+    cn.display_initial_ai_message()
+
 
 
 ############################################################
 # 5. 会話ログの表示
 ############################################################
 try:
-    # 会話ログの表示
-    cn.display_conversation_log()
+    with right:
+        try:
+            cn.display_conversation_log()
+        except Exception as e:
+            logger.error(f"{ct.CONVERSATION_LOG_ERROR_MESSAGE}\n{e}")
+            st.error(utils.build_error_message(ct.CONVERSATION_LOG_ERROR_MESSAGE), icon=ct.ERROR_ICON)
+            st.stop()
 except Exception as e:
     # エラーログの出力
     logger.error(f"{ct.CONVERSATION_LOG_ERROR_MESSAGE}\n{e}")
@@ -84,74 +95,57 @@ except Exception as e:
 ############################################################
 # 6. チャット入力の受け付け
 ############################################################
-chat_message = st.chat_input(ct.CHAT_INPUT_HELPER_TEXT)
+# 右カラムに入力フォームを追加（上の right カラムの続きに置く）
+with right:
+    with st.form("chat_form", clear_on_submit=True):
+        user_text = st.text_area("メッセージを入力", height=80, placeholder="こちらに入力してください。")
+        submitted = st.form_submit_button("送信")
+
+# 既存フローに合わせるため、chat_message へ詰め替える
+chat_message = None
+if submitted and user_text and user_text.strip():
+    chat_message = user_text.strip()
 
 
-############################################################
-# 7. チャット送信時の処理
-############################################################
+
+# ==========================================
+# 7. チャット送信時の処理（右カラムに統一表示）
+# ==========================================
 if chat_message:
-    # ==========================================
-    # 7-1. ユーザーメッセージの表示
-    # ==========================================
-    # ユーザーメッセージのログ出力
+    # 7-1. ユーザーメッセージのログ出力
     logger.info({"message": chat_message, "application_mode": st.session_state.mode})
 
-    # ユーザーメッセージを表示
-    with st.chat_message("user"):
-        st.markdown(chat_message)
+    with right:
+        # 7-1. ユーザーメッセージの表示（右カラム）
+        with st.chat_message("user"):
+            st.markdown(chat_message)
 
-    # ==========================================
-    # 7-2. LLMからの回答取得
-    # ==========================================
-    # 「st.spinner」でグルグル回っている間、表示の不具合が発生しないよう空のエリアを表示
-    res_box = st.empty()
-    # LLMによる回答生成（回答生成が完了するまでグルグル回す）
-    with st.spinner(ct.SPINNER_TEXT):
-        try:
-            # 画面読み込み時に作成したRetrieverを使い、Chainを実行
-            llm_response = utils.get_llm_response(chat_message)
-        except Exception as e:
-            # エラーログの出力
-            logger.error(f"{ct.GET_LLM_RESPONSE_ERROR_MESSAGE}\n{e}")
-            # エラーメッセージの画面表示
-            st.error(utils.build_error_message(ct.GET_LLM_RESPONSE_ERROR_MESSAGE), icon=ct.ERROR_ICON)
-            # 後続の処理を中断
-            st.stop()
-    
-    # ==========================================
-    # 7-3. LLMからの回答表示
-    # ==========================================
-    with st.chat_message("assistant"):
-        try:
-            # ==========================================
-            # モードが「社内文書検索」の場合
-            # ==========================================
-            if st.session_state.mode == ct.ANSWER_MODE_1:
-                # 入力内容と関連性が高い社内文書のありかを表示
-                content = cn.display_search_llm_response(llm_response)
+        # 7-2. LLMからの回答取得（スピナー＋空プレースホルダでチラつき防止）
+        res_box = st.empty()
+        with st.spinner(ct.SPINNER_TEXT):
+            try:
+                llm_response = utils.get_llm_response(chat_message)
+            except Exception as e:
+                logger.error(f"{ct.GET_LLM_RESPONSE_ERROR_MESSAGE}\n{e}")
+                st.error(utils.build_error_message(ct.GET_LLM_RESPONSE_ERROR_MESSAGE), icon=ct.ERROR_ICON)
+                st.stop()
 
-            # ==========================================
-            # モードが「社内問い合わせ」の場合
-            # ==========================================
-            elif st.session_state.mode == ct.ANSWER_MODE_2:
-                # 入力に対しての回答と、参照した文書のありかを表示
-                content = cn.display_contact_llm_response(llm_response)
-            
+        # 7-3. LLMからの回答表示（モード別）※右カラムに表示
+        try:
+            with st.chat_message("assistant"):
+                if st.session_state.mode == ct.ANSWER_MODE_1:
+                    content = cn.display_search_llm_response(llm_response)
+                else:
+                    content = cn.display_contact_llm_response(llm_response)
+
             # AIメッセージのログ出力
             logger.info({"message": content, "application_mode": st.session_state.mode})
+
         except Exception as e:
-            # エラーログの出力
             logger.error(f"{ct.DISP_ANSWER_ERROR_MESSAGE}\n{e}")
-            # エラーメッセージの画面表示
             st.error(utils.build_error_message(ct.DISP_ANSWER_ERROR_MESSAGE), icon=ct.ERROR_ICON)
-            # 後続の処理を中断
             st.stop()
 
-    # ==========================================
-    # 7-4. 会話ログへの追加
-    # ==========================================
-    # 表示用の会話ログにユーザーメッセージを追加
+    # 7-4. 会話ログへの追加（画面再描画時のため）
     st.session_state.messages.append({"role": "user", "content": chat_message})
-    # 表示用の会話ログにAIメッセージを追加
     st.session_state.messages.append({"role": "assistant", "content": content})

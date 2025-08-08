@@ -21,19 +21,32 @@ def display_app_title():
     st.markdown(f"## {ct.APP_NAME}")
 
 
-def display_select_mode():
-    """
-    回答モードのラジオボタンを表示
-    """
-    # 回答モードを選択する用のラジオボタンを表示
-    col1, col2 = st.columns([100, 1])
-    with col1:
-        # 「label_visibility="collapsed"」とすることで、ラジオボタンを非表示にする
+def display_select_mode(container=None):
+    """左カラムなど任意のcontainerにモード選択を表示"""
+    tgt = container if container is not None else st
+    if "mode" not in st.session_state:
+        st.session_state.mode = ct.ANSWER_MODE_1
+    with tgt:
+        st.subheader("利用目的")
         st.session_state.mode = st.radio(
-            label="",
+            label=ct.SELECT_MODE_LABEL if hasattr(ct, "SELECT_MODE_LABEL") else "利用目的を選択",
             options=[ct.ANSWER_MODE_1, ct.ANSWER_MODE_2],
-            label_visibility="collapsed"
         )
+
+def display_examples_block():
+    """左カラムの説明＆入力例ブロック"""
+    st.markdown("### 【「社内文書検索」を選択した場合】")
+    st.info("入力内容と関連性が高い社内文書のありかを検索できます。")
+    st.caption("【入力例】")
+    st.code("社員の育成方針に関するMTGの議事録")
+
+    st.divider()
+
+    st.markdown("### 【「社内問い合わせ」を選択した場合】")
+    st.info("質問・要望に対して、社内文書の情報をもとに回答を得られます。")
+    st.caption("【入力例】")
+    st.code("人事部に所属している従業員情報を一覧化して")
+
 
 
 def display_initial_ai_message():
