@@ -22,9 +22,9 @@ st.set_page_config(page_title=ct.APP_NAME, layout="wide")
 # set_page_config の後・columns の前で一度だけ
 st.markdown("""
 <style>
-/* Streamlit デフォルトの余白を消す */
+/* 右カラム全体（タイトル側） */
 .block-container {
-    padding-top: 0rem !important;
+    padding-top: 2rem !important;  /* 上余白を揃えるために追加 */
     padding-bottom: 0rem !important;
     padding-left: 0rem !important;
     padding-right: 0rem !important;
@@ -36,9 +36,11 @@ div[data-testid="stHorizontalBlock"] > div:first-child {
     padding: 16px !important;
     margin: 0 !important;
     height: 100vh !important;
+    padding-top: 2rem !important;  /* 右と同じ高さにする */
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 
 
