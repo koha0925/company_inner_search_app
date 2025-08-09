@@ -57,18 +57,21 @@ if not "initialized" in st.session_state:
 # 4. 初期表示
 ############################################################
 # ===== 2カラムレイアウト =====
-left, right = st.columns([1, 2])
+left, right = st.columns([1, 2.2])  # 右を少し広めに
 
 # ---- 左：モード選択 + 区切り + 例 ----
 with left:
     cn.display_select_mode(container=left)  # ← 左カラムにラジオを出す（components.pyを置換済み前提）
     st.divider()
-    cn.display_examples_block()            # ← 例ブロック（components.pyに追加した関数）
+    cn.display_examples_block()   # ← 例はここだけ
 
 # ---- 右：タイトル + 案内文 ----
 with right:
     cn.display_app_title()
-    cn.display_initial_ai_message()
+    cn.display_initial_ai_message()  # ← 案内だけに変更済み
+    with st.form("chat_form", clear_on_submit=True):
+        user_text = st.text_area("メッセージを入力", height=80, placeholder="こちらに入力してください。")
+        submitted = st.form_submit_button("送信")
 
 
 
@@ -95,11 +98,6 @@ except Exception as e:
 ############################################################
 # 6. チャット入力の受け付け
 ############################################################
-# 右カラムに入力フォームを追加（上の right カラムの続きに置く）
-with right:
-    with st.form("chat_form", clear_on_submit=True):
-        user_text = st.text_area("メッセージを入力", height=80, placeholder="こちらに入力してください。")
-        submitted = st.form_submit_button("送信")
 
 # 既存フローに合わせるため、chat_message へ詰め替える
 chat_message = None
