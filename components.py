@@ -21,28 +21,42 @@ def display_app_title():
     st.markdown(f"## {ct.APP_NAME}")
 
 
-def display_select_mode(container=None):
-    """左カラムなど任意のcontainerにモード選択を表示"""
+def display_select_mode(container=None, show_header=False):
     tgt = container if container is not None else st
+
     if "mode" not in st.session_state:
         st.session_state.mode = ct.ANSWER_MODE_1
-    with tgt:
-        st.subheader("利用目的")
+
+    def body():
+        # 外側で見出しを描くのでデフォルトは非表示
+        if show_header:
+            st.subheader("利用目的")
+
         st.session_state.mode = st.radio(
-            label=ct.SELECT_MODE_LABEL if hasattr(ct, "SELECT_MODE_LABEL") else "利用目的を選択",
+            label="利用目的",                 # 中身あり
             options=[ct.ANSWER_MODE_1, ct.ANSWER_MODE_2],
+            label_visibility="collapsed",    # でも画面には出さない
         )
 
+    if container is not None:
+        with container:
+            body()
+    else:
+        body()
+
+
+
 def display_examples_block():
-    """左カラムの説明＆入力例ブロック"""
-    st.markdown("### 【「社内文書検索」を選択した場合】")
+    # 社内文書検索
+    st.markdown('<div class="lp-sec">【「社内文書検索」を選択した場合】</div>', unsafe_allow_html=True)
     st.info("入力内容と関連性が高い社内文書のありかを検索できます。")
     st.caption("【入力例】")
     st.code("社員の育成方針に関するMTGの議事録")
 
-    st.divider()
+    st.markdown('<hr class="lp-hr"/>', unsafe_allow_html=True)
 
-    st.markdown("### 【「社内問い合わせ」を選択した場合】")
+    # 社内問い合わせ
+    st.markdown('<div class="lp-sec">【「社内問い合わせ」を選択した場合】</div>', unsafe_allow_html=True)
     st.info("質問・要望に対して、社内文書の情報をもとに回答を得られます。")
     st.caption("【入力例】")
     st.code("人事部に所属している従業員情報を一覧化して")
