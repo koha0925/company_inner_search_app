@@ -70,7 +70,7 @@ if not "initialized" in st.session_state:
 
 
 # ===== 2カラムレイアウト =====
-left, right = st.columns([2, 8])
+left, right = st.columns([2.5, 7.5])
 with left:
     cn.display_select_mode(show_header=False)
     cn.display_examples_block()
