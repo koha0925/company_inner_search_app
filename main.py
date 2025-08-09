@@ -38,6 +38,19 @@ div[data-testid="stHorizontalBlock"] > div:first-child {
     height: 100vh !important;
     padding-top: 2rem !important;  /* 右と同じ高さにする */
 }
+.left-title{ font-size:16px; font-weight:700; margin:0 0 8px 0; }
+.sec-title{
+  font-weight:700;
+  margin: 8px 0 6px 0;   /* 好みで微調整 */
+  font-size: 14px;       /* 小見出し感を出したい時 */
+}
+            .example-box {
+    background-color: white;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 14px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -72,7 +85,10 @@ if not "initialized" in st.session_state:
 # ===== 2カラムレイアウト =====
 left, right = st.columns([2.5, 7.5])
 with left:
+    st.markdown('<div class="left-title">利用目的</div>', unsafe_allow_html=True)
     cn.display_select_mode(show_header=False)
+    # 区切り線を表示
+    st.divider()
     cn.display_examples_block()
 
 

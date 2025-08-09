@@ -48,18 +48,24 @@ def display_select_mode(container=None, show_header=False):
 
 def display_examples_block():
     # 社内文書検索
-    st.markdown('<div class="lp-sec">【「社内文書検索」を選択した場合】</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-title">【「社内文書検索」を選択した場合】</div>', unsafe_allow_html=True)
     st.info("入力内容と関連性が高い社内文書のありかを検索できます。")
-    st.caption("【入力例】")
-    st.code("社員の育成方針に関するMTGの議事録")
-
-    st.markdown('<hr class="lp-hr"/>', unsafe_allow_html=True)
+    st.markdown("""
+<div class="example-box">
+  <b>【入力例】</b><br>
+  社員の育成方針に関するMTGの議事録
+</div>
+""", unsafe_allow_html=True)
 
     # 社内問い合わせ
-    st.markdown('<div class="lp-sec">【「社内問い合わせ」を選択した場合】</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-title">【「社内問い合わせ」を選択した場合】</div>', unsafe_allow_html=True)
     st.info("質問・要望に対して、社内文書の情報をもとに回答を得られます。")
-    st.caption("【入力例】")
-    st.code("人事部に所属している従業員情報を一覧化して")
+    st.markdown("""
+<div class="example-box">
+  <b>【入力例】</b><br>
+  人事部に所属している従業員情報を一覧化して
+</div>
+""", unsafe_allow_html=True)
 
 
 
